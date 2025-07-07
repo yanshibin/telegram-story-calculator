@@ -432,12 +432,7 @@
         subscribersInput.addEventListener('input', calculateBoosts);
         targetLevelInput.addEventListener('input', calculateTargetLevel);
 
-        // 初始化示例数据
-        setTimeout(() => {
-            subscribersInput.value = '10000';
-            targetLevelInput.value = '5';
-            calculateBoosts();
-        }, 500);
+        // 页面加载完成，等待用户输入
     </script>
 </body>
 </html>
