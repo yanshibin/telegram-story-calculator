@@ -294,19 +294,19 @@
 
         <!-- 反向计算 -->
         <div class="reverse-calc">
-            <h3>🔄 我有多少Boost能升到几级？</h3>
+            <h3>🔄 升到指定等级需要多少Boost？</h3>
             <div class="reverse-grid">
                 <div>
-                    <input type="number" id="currentBoosts" class="reverse-input" 
-                           placeholder="输入现有Boost数量" min="1">
+                    <input type="number" id="targetLevel" class="reverse-input" 
+                           placeholder="输入目标等级" min="1" max="20">
                 </div>
                 <div class="reverse-result">
-                    <div class="reverse-result-value" id="maxLevel">-</div>
-                    <div class="reverse-result-label">最高等级</div>
+                    <div class="reverse-result-value" id="totalBoosts">-</div>
+                    <div class="reverse-result-label">总需求</div>
                 </div>
                 <div class="reverse-result">
-                    <div class="reverse-result-value" id="remainingBoosts">-</div>
-                    <div class="reverse-result-label">剩余Boost</div>
+                    <div class="reverse-result-value" id="incrementBoosts">-</div>
+                    <div class="reverse-result-label">本级新增</div>
                 </div>
             </div>
         </div>
@@ -350,30 +350,30 @@
         }
 
         const subscribersInput = document.getElementById('subscribers');
-        const currentBoostsInput = document.getElementById('currentBoosts');
+        const targetLevelInput = document.getElementById('targetLevel');
         const level1BoostDisplay = document.getElementById('level1Boost');
         const incrementBoostDisplay = document.getElementById('incrementBoost');
-        const maxLevelDisplay = document.getElementById('maxLevel');
-        const remainingBoostsDisplay = document.getElementById('remainingBoosts');
+        const totalBoostsDisplay = document.getElementById('totalBoosts');
+        const incrementBoostsDisplay = document.getElementById('incrementBoosts');
         const levelsTableBody = document.getElementById('levelsTableBody');
 
-        function calculateReverseLevel() {
-            const currentBoosts = parseInt(currentBoostsInput.value) || 0;
+        function calculateTargetLevel() {
+            const targetLevel = parseInt(targetLevelInput.value) || 0;
             const level1Boost = Math.ceil((parseInt(subscribersInput.value) || 0) * 0.004);
 
-            if (currentBoosts <= 0 || level1Boost <= 0) {
-                maxLevelDisplay.textContent = '-';
-                remainingBoostsDisplay.textContent = '-';
+            if (targetLevel <= 0 || targetLevel > 20 || level1Boost <= 0) {
+                totalBoostsDisplay.textContent = '-';
+                incrementBoostsDisplay.textContent = '-';
                 return;
             }
 
-            const maxLevel = Math.floor(currentBoosts / level1Boost);
-            const remainingBoosts = currentBoosts - (maxLevel * level1Boost);
+            const totalBoosts = level1Boost * targetLevel;
+            const incrementBoosts = level1Boost;
 
-            maxLevelDisplay.textContent = maxLevel;
-            remainingBoostsDisplay.textContent = remainingBoosts;
+            totalBoostsDisplay.textContent = totalBoosts.toLocaleString();
+            incrementBoostsDisplay.textContent = incrementBoosts.toLocaleString();
 
-            highlightTableRow(maxLevel);
+            highlightTableRow(targetLevel);
         }
 
         function highlightTableRow(targetLevel) {
@@ -398,8 +398,8 @@
                 level1BoostDisplay.textContent = '0';
                 incrementBoostDisplay.textContent = '0';
                 levelsTableBody.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--tg-theme-hint-color);">请输入订阅者数量</div>';
-                maxLevelDisplay.textContent = '-';
-                remainingBoostsDisplay.textContent = '-';
+                totalBoostsDisplay.textContent = '-';
+                incrementBoostsDisplay.textContent = '-';
                 return;
             }
 
@@ -425,17 +425,17 @@
             }
             
             levelsTableBody.innerHTML = tableHTML;
-            calculateReverseLevel();
+            calculateTargetLevel();
         }
 
         // 事件监听
         subscribersInput.addEventListener('input', calculateBoosts);
-        currentBoostsInput.addEventListener('input', calculateReverseLevel);
+        targetLevelInput.addEventListener('input', calculateTargetLevel);
 
         // 初始化示例数据
         setTimeout(() => {
             subscribersInput.value = '10000';
-            currentBoostsInput.value = '1000';
+            targetLevelInput.value = '5';
             calculateBoosts();
         }, 500);
     </script>
