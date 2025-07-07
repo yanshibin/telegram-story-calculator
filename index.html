@@ -636,9 +636,20 @@
             fetchBtn.disabled = true;
 
             try {
-                // 模拟获取过程（实际项目中这里会调用真实API）
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                showGetManualGuide(cleanUrl);
+                // 调用 Vercel API 代理
+                const response = await fetch(`/api/proxy?url=${encodeURIComponent(cleanUrl)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // 成功获取到订阅者数量
+                    subscribersInput.value = data.membersCount;
+                    calculateBoosts();
+                    showNotification(`✅ 成功获取订阅者数量: ${data.membersCount.toLocaleString()}`, true);
+                } else {
+                    // 获取失败，显示手动指南
+                    console.error('API 错误:', data.error);
+                    showGetManualGuide(cleanUrl, data.debug);
+                }
             } catch (error) {
                 console.error('获取失败:', error);
                 showGetManualGuide(cleanUrl);
@@ -648,9 +659,25 @@
             }
         }
 
-        function showGetManualGuide(url) {
+        function showGetManualGuide(url, debugInfo = null) {
             const modal = document.createElement('div');
             modal.className = 'modal-overlay';
+            
+            let debugContent = '';
+            if (debugInfo) {
+                debugContent = `
+                    <div class="method-card">
+                        <h4>🔍 调试信息</h4>
+                        <div style="font-size: 0.8rem; color: var(--tg-theme-hint-color);">
+                            <p>页面标题: ${debugInfo.title || '未找到'}</p>
+                            <p>页面描述: ${debugInfo.description || '未找到'}</p>
+                            <p>HTML长度: ${debugInfo.htmlLength || 0}</p>
+                            <p>包含"members": ${debugInfo.containsMembers ? '是' : '否'}</p>
+                            <p>包含"subscribers": ${debugInfo.containsSubscribers ? '是' : '否'}</p>
+                        </div>
+                    </div>
+                `;
+            }
             
             modal.innerHTML = `
                 <div class="modal-content">
@@ -668,6 +695,8 @@
                         <p style="font-size: 0.85rem;">1. 访问：<a href="${url}" target="_blank" style="color: var(--tg-theme-link-color);">${url}</a></p>
                         <p style="font-size: 0.85rem;">2. 找到 "X members" 复制数字</p>
                     </div>
+
+                    ${debugContent}
 
                     <div style="text-align: center; margin-top: 20px;">
                         <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">知道了</button>
