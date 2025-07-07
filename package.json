@@ -1,0 +1,30 @@
+{
+  "name": "telegram-story-level-calculator",
+  "version": "1.0.0",
+  "description": "Telegram Mini App for calculating story levels with Vercel proxy",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step needed for static files'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/telegram-story-calculator.git"
+  },
+  "keywords": [
+    "telegram",
+    "mini-app",
+    "story-level",
+    "calculator",
+    "vercel",
+    "proxy"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
