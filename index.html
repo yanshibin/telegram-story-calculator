@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Story Level Calculator - Telegram Mini App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* Telegram Mini App 样式变量 */
+        :root {
+            --tg-color-scheme: light;
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-secondary-bg-color: #f1f1f1;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --tg-theme-bg-color: #17212b;
+                --tg-theme-text-color: #ffffff;
+                --tg-theme-hint-color: #708499;
+                --tg-theme-link-color: #6ab7ff;
+                --tg-theme-button-color: #5288c1;
+                --tg-theme-secondary-bg-color: #232e3c;
+            }
+        }
+
+        .mini-app-header {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 20px 16px 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mini-app-header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .mini-app-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 16px;
+            max-width: 100%;
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--tg-theme-text-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color);
+            box-shadow: 0 0 0 2px rgba(36, 129, 204, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hint-text {
+            font-size: 0.8rem;
+            color: var(--tg-theme-hint-color);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-desc {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .reverse-calc {
+            background: linear-gradient(135deg, #ff9500, #ff6b00);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .reverse-calc h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reverse-grid {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .reverse-input {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .reverse-result {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .reverse-result-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .reverse-result-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .levels-table {
+            background: var(--tg-theme-bg-color);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--tg-theme-hint-color);
+        }
+
+        .table-header {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .table-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--tg-theme-hint-color);
+            font-size: 0.9rem;
+            align-items: center;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row.highlighted {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border-radius: 6px;
+            margin: 2px;
+            border: none;
+        }
+
+        .table-row.featured {
+            background: rgba(36, 129, 204, 0.1);
+            border-left: 3px solid var(--tg-theme-button-color);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 16px;
+            left: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideDown 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #00b894, #00a085);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: var(--tg-theme-bg-color);
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            color: var(--tg-theme-text-color);
+        }
+
+        .method-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--tg-theme-button-color);
+        }
+
+        .method-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--tg-theme-button-color);
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            color: #333;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin: 8px 0;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .reverse-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                text-align: center;
+            }
+            
+            .table-row {
+                font-size: 0.8rem;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mini-app-header">
+        <h1>🚀 Story Level Calculator</h1>
+        <p>Telegram 频道故事等级计算器</p>
+    </div>
+
+    <div class="content">
+        <!-- 输入区域 -->
+        <div class="card">
+            <div class="input-group">
+                <label class="input-label">🔗 频道链接或用户名</label>
+                <div class="input-row">
+                    <input type="text" id="channelUrl" class="input-field" 
+                           placeholder="@hhgx 或 https://t.me/boost/hhgx">
+                    <button id="fetchBtn" class="btn-primary">获取</button>
+                </div>
+                <div class="hint-text">支持多种格式：boost链接、@用户名、直接用户名</div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">👥 订阅者数量</label>
+                <input type="number" id="subscribers" class="input-field" 
+                       placeholder="或手动输入订阅者数量" min="1">
+                <div class="hint-text">也可以手动输入频道订阅者数量</div>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Level 1 所需</h3>
+                <div class="stat-value" id="level1Boost">0</div>
+                <div class="stat-desc">Boost</div>
+            </div>
+            <div class="stat-card">
+                <h3>每级递增</h3>
+                <div class="stat-value" id="incrementBoost">0</div>
+                <div class="stat-desc">Boost</div>
+            </div>
+        </div>
+
+        <!-- 反向计算 -->
+        <div class="reverse-calc">
+            <h3>🔄 我有多少Boost能升到几级？</h3>
+            <div class="reverse-grid">
+                <div>
+                    <input type="number" id="currentBoosts" class="reverse-input" 
+                           placeholder="输入现有Boost数量" min="1">
+                </div>
+                <div class="reverse-result">
+                    <div class="reverse-result-value" id="maxLevel">-</div>
+                    <div class="reverse-result-label">最高等级</div>
+                </div>
+                <div class="reverse-result">
+                    <div class="reverse-result-value" id="remainingBoosts">-</div>
+                    <div class="reverse-result-label">剩余Boost</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 等级表格 -->
+        <div class="card">
+            <div class="levels-table">
+                <div class="table-header">
+                    🏆 各等级升级成本
+                </div>
+                <div class="table-content" id="tableContainer">
+                    <div class="table-row">
+                        <div style="font-weight: 600;">等级</div>
+                        <div style="font-weight: 600;">总Boost</div>
+                        <div style="font-weight: 600;">新增</div>
+                    </div>
+                    <div id="levelsTableBody">
+                        <div style="padding: 20px; text-align: center; color: var(--tg-theme-hint-color);">
+                            请输入订阅者数量
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram Mini App 初始化
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            
+            // 设置主题颜色
+            if (tg.themeParams) {
+                const root = document.documentElement;
+                Object.entries(tg.themeParams).forEach(([key, value]) => {
+                    root.style.setProperty(`--tg-theme-${key.replace(/_/g, '-')}`, value);
+                });
+            }
+        }
+
+        const subscribersInput = document.getElementById('subscribers');
+        const channelUrlInput = document.getElementById('channelUrl');
+        const fetchBtn = document.getElementById('fetchBtn');
+        const currentBoostsInput = document.getElementById('currentBoosts');
+        const level1BoostDisplay = document.getElementById('level1Boost');
+        const incrementBoostDisplay = document.getElementById('incrementBoost');
+        const maxLevelDisplay = document.getElementById('maxLevel');
+        const remainingBoostsDisplay = document.getElementById('remainingBoosts');
+        const levelsTableBody = document.getElementById('levelsTableBody');
+
+        function calculateReverseLevel() {
+            const currentBoosts = parseInt(currentBoostsInput.value) || 0;
+            const level1Boost = Math.ceil((parseInt(subscribersInput.value) || 0) * 0.004);
+
+            if (currentBoosts <= 0 || level1Boost <= 0) {
+                maxLevelDisplay.textContent = '-';
+                remainingBoostsDisplay.textContent = '-';
+                return;
+            }
+
+            const maxLevel = Math.floor(currentBoosts / level1Boost);
+            const remainingBoosts = currentBoosts - (maxLevel * level1Boost);
+
+            maxLevelDisplay.textContent = maxLevel;
+            remainingBoostsDisplay.textContent = remainingBoosts;
+
+            highlightTableRow(maxLevel);
+        }
+
+        function highlightTableRow(targetLevel) {
+            const allRows = document.querySelectorAll('.table-row');
+            allRows.forEach(row => {
+                row.classList.remove('highlighted');
+            });
+
+            if (targetLevel > 0) {
+                const targetRow = document.querySelector(`[data-level="${targetLevel}"]`);
+                if (targetRow) {
+                    targetRow.classList.add('highlighted');
+                    targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function calculateBoosts() {
+            const subscribers = parseInt(subscribersInput.value) || 0;
+            
+            if (subscribers <= 0) {
+                level1BoostDisplay.textContent = '0';
+                incrementBoostDisplay.textContent = '0';
+                levelsTableBody.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--tg-theme-hint-color);">请输入订阅者数量</div>';
+                maxLevelDisplay.textContent = '-';
+                remainingBoostsDisplay.textContent = '-';
+                return;
+            }
+
+            const level1Boost = Math.ceil(subscribers * 0.004);
+            
+            level1BoostDisplay.textContent = level1Boost.toLocaleString();
+            incrementBoostDisplay.textContent = level1Boost.toLocaleString();
+
+            let tableHTML = '';
+            for (let level = 1; level <= 20; level++) {
+                const totalBoosts = level1Boost * level;
+                const newBoosts = level1Boost;
+                
+                const rowClass = level <= 5 ? 'featured' : '';
+                
+                tableHTML += `
+                    <div class="table-row ${rowClass}" data-level="${level}">
+                        <div>Level ${level}</div>
+                        <div>${totalBoosts.toLocaleString()}</div>
+                        <div>+${newBoosts.toLocaleString()}</div>
+                    </div>
+                `;
+            }
+            
+            levelsTableBody.innerHTML = tableHTML;
+            calculateReverseLevel();
+        }
+
+        function normalizeChannelInput(input) {
+            input = input.trim();
+            
+            if (input.startsWith('http://') || input.startsWith('https://')) {
+                if (input.includes('t.me/')) {
+                    if (input.includes('/boost/')) {
+                        return input.replace('/boost/', '/');
+                    }
+                    return input;
+                }
+                return null;
+            }
+            
+            if (input.startsWith('t.me/')) {
+                if (input.includes('/boost/')) {
+                    return 'https://' + input.replace('/boost/', '/');
+                }
+                return 'https://' + input;
+            }
+            
+            if (input.startsWith('boost/')) {
+                const username = input.substring(6);
+                if (isValidUsername(username)) {
+                    return `https://t.me/${username}`;
+                }
+                return null;
+            }
+            
+            if (input.startsWith('@')) {
+                const username = input.substring(1);
+                if (isValidUsername(username)) {
+                    return `https://t.me/${username}`;
+                }
+                return null;
+            }
+            
+            if (isValidUsername(input)) {
+                return `https://t.me/${input}`;
+            }
+            
+            return null;
+        }
+
+        function isValidUsername(username) {
+            const usernameRegex = /^[a-zA-Z][a-zA-Z0-9_]{4,31}$/;
+            return usernameRegex.test(username) && !username.endsWith('_');
+        }
+
+        function showNotification(message, isSuccess = true) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        async function fetchChannelData() {
+            const input = channelUrlInput.value.trim();
+            if (!input) {
+                showNotification('请输入频道链接或用户名', false);
+                return;
+            }
+
+            const cleanUrl = normalizeChannelInput(input);
+            if (!cleanUrl) {
+                showNotification('请输入正确的频道链接或用户名', false);
+                return;
+            }
+
+            if (input.includes('/boost/')) {
+                showNotification(`🔄 已转换为: ${cleanUrl.split('/').pop()}`, true);
+            }
+
+            fetchBtn.textContent = '获取中...';
+            fetchBtn.disabled = true;
+
+            try {
+                // 模拟获取过程（实际项目中这里会调用真实API）
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                showGetManualGuide(cleanUrl);
+            } catch (error) {
+                console.error('获取失败:', error);
+                showGetManualGuide(cleanUrl);
+            } finally {
+                fetchBtn.textContent = '获取';
+                fetchBtn.disabled = false;
+            }
+        }
+
+        function showGetManualGuide(url) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3 style="margin-bottom: 16px; color: var(--tg-theme-text-color);">📱 获取订阅数指南</h3>
+                    
+                    <div class="method-card">
+                        <h4>💡 方法一：浏览器控制台（推荐）</h4>
+                        <p style="font-size: 0.85rem; margin-bottom: 8px;">按 F12 → Console → 粘贴代码：</p>
+                        <div class="code-block">fetch('${url}').then(r=>r.text()).then(html=>{const m=html.match(/(\\d{1,3}(?:[,\\s]\\d{3})*)\\s*members/i);if(m){const c=m[1].replace(/[,\\s]/g,'');alert('订阅者: '+parseInt(c).toLocaleString())}})</div>
+                        <button class="copy-btn" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>alert('已复制！'))">复制代码</button>
+                    </div>
+
+                    <div class="method-card">
+                        <h4>📱 方法二：手动查看</h4>
+                        <p style="font-size: 0.85rem;">1. 访问：<a href="${url}" target="_blank" style="color: var(--tg-theme-link-color);">${url}</a></p>
+                        <p style="font-size: 0.85rem;">2. 找到 "X members" 复制数字</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.parentElement.remove()">知道了</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // 事件监听
+        fetchBtn.addEventListener('click', fetchChannelData);
+        subscribersInput.addEventListener('input', calculateBoosts);
+        currentBoostsInput.addEventListener('input', calculateReverseLevel);
+        
+        channelUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchChannelData();
+            }
+        });
+
+        // 初始化示例数据
+        setTimeout(() => {
+            channelUrlInput.value = 'https://t.me/boost/hhgx';
+            subscribersInput.value = '10000';
+            currentBoostsInput.value = '1000';
+            calculateBoosts();
+        }, 500);
+    </script>
+</body>
+</html>
